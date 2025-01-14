@@ -1,0 +1,23 @@
+' TUTORIAL -- https://youtu.be/xkwJ9GwgZJU
+
+' Comentario simple
+/' Comentario
+de
+bloque '/
+
+' Directiva (directive) de apertura, junto con el título del diagrama (opcional; y evitar espacios)
+@startuml hello_world
+
+' skinparam para cambiar apariencia -- Recordatorio: ctrl+space para ver las opciones disponibles
+' Style > strictuml elimina la duplicación de objetos debajo
+skinparam Style strictuml
+
+' SequenceMessageAlignment > center centra el texto de las secuencias
+skinparam SequenceMessageAlignment center
+
+A -> B : Hello world
+A <- B : Hi!
+' También válido B -> A
+
+' Directiva de cierre
+@enduml

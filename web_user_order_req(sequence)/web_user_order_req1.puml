@@ -1,0 +1,47 @@
+' TUTORIAL -- https://youtu.be/JqJpbNxIK90
+' Práctica de un diagrama de secuencia, sobre los pasos involucrados en la respuesta a una petición de un usuario de una página web.
+
+@startuml web_user_order_req1
+
+' Declaramos objetos (participantes). Si el nombre a mostrar en el diagrama contiene espacios o queremos que sea diferente usamos aliasing.
+' No es obligatorio declarar todos los objetos usados en las relaciones porque se generarían automáticamente, pero sí es una buena práctica
+actor "Web User" as WebUser
+participant "Front End" as Portal
+participant Gateway
+participant "Identity\nServer" as IdentityServer
+
+/' Activación de life cycles
+activate Portal
+Portal -> WebUser : Sends response
+deactivate Portal 
+    #ProTip
+    Atajo que se puede incluir en la propia relación:
+    WebUser -> Portal ++ : Orders request
+    Portal -> WebUser -- : Sends response
+    ("++ :" o "++:" son válidos)
+'/
+
+WebUser -> Portal ++ : Orders request
+
+' Grupos. Se abren con:
+group Step: Authentication
+    Portal -> Gateway ++ : GET /api/vi/orders\nBearer token
+    Gateway -> IdentityServer ++ : Authenticate token
+    ' Self loop
+    IdentityServer -> IdentityServer : Validate\ntoken
+    IdentityServer -> Gateway : Success,\ntoken validated
+' If-else flow
+else Authentication failed
+    IdentityServer -> Gateway -- : Request failed
+    Gateway -> Portal : Authentication failure
+    Portal -> WebUser : "Please login again"
+/' Admite todos los else que se necesiten
+else Authentication failed 2
+    IdentityServer -> Gateway -- : Request failed 2
+    ... '/
+' Cierre de grupo
+end
+
+Portal -> WebUser -- : Sends response
+
+@enduml

@@ -1,0 +1,67 @@
+' TUTORIAL -- https://youtu.be/JqJpbNxIK90
+' Parte 2 para mantener el código limpio, desde 19:25
+
+@startuml web_user_order_req2
+' Encabezado, pie de página (aparecen en todas las páginas)
+header //Let'sDoCoding
+footer Page %page% of %lastpage%
+' Titulo del diagrama (solo aparece en la página que se indica)
+title "WEB USER ORDERS FLOW"
+
+actor "Web User" as WebUser
+participant "Front End" as Portal
+participant Gateway
+' Colores a los objetos
+participant "Identity\nServer" as IdentityServer #Yellow
+participant "Rest API" as RestAPI
+database "Orders\ndatabase" as OrdersDatabase #LightBlue
+entity "External\nShipping\nService" as ExternalShippingService #Orange
+
+' Numeración automática (necesitamos resetear la numeración manualmente si el flujo lo requiere)
+autonumber
+WebUser -> Portal ++ : Orders request
+group Step 1: Authentication
+    Portal -> Gateway ++ : GET /api/vi/orders\nBearer token
+    Gateway -> IdentityServer ++ : Authenticate token
+    ' Dashed line, linea discontinua -->
+    IdentityServer --> IdentityServer : Validate\ntoken
+    ' Añadir colores -[#red]> -[#12abcd]> (no case sensitive)
+    IdentityServer -[#Green]> Gateway : Success,\ntoken validated
+else Authentication failed
+    ' Reseteamos la numeración en un nuevo flujo lógico desde el nº que corresponde
+    autonumber 5
+    IdentityServer -[#Red]> Gateway -- : Request failed
+    Gateway -[#Red]> Portal : Authentication failure
+    Portal -[#Red]> WebUser : "Please login again"
+    ' Sticky notes, anotaciones
+    note right : Authentication has failed
+end
+
+autonumber 6
+group Step 2: Call order API
+    Gateway -> RestAPI ++ : GET api/vi/orders
+    RestAPI --[#Blue]> RestAPI : Do some\nprocessing...
+    ' Nested groups, grupos anidados
+    group
+        ' Extensión de numeración
+        autonumber 8.1
+        RestAPI -> OrdersDatabase ++ : Query orders
+        OrdersDatabase -> RestAPI -- : Orders
+    end
+
+    ' Indicamos que pase al siguiente número entero (incrementar). Se pueden añadir subsecciones con letras también.
+    autonumber inc A
+    ' Loop, bucle
+    loop Find shipping status
+        ' Se puede crear un participante arriba de todo o en la 1ª llamada, lo cual es útil si solo interviene en una sección específica del diagrama. Dejamos comentada esta línea siguiente porque en este caso ya lo declaramos arriba (descomentar para ver como se vería)
+        ' create ExternalShippingService
+        RestAPI -> ExternalShippingService ++ : Find shipping status
+        ExternalShippingService -> RestAPI -- : Return shipping status
+    end
+    ' Volvemos a números enteros
+    autonumber 10
+    RestAPI -> Portal -- : Orders
+end
+Portal -> WebUser -- : Sends response
+
+@enduml
